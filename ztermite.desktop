@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ztermite
+Comment=Use the command line
+Exec=ztermite
+Icon=utilities-terminal
+Type=Application
+Categories=GTK;System;TerminalEmulator;
+StartupNotify=true
