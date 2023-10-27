@@ -41,7 +41,6 @@ using std::list;
 #define ZXY(A) Mode A(#A, A##ƌ, A##Shiftƌ);
 #define QYX(A) Mode A(#A, Q##A##ƌ, Q##A##Shiftƌ);
 
-
 static string mode = "normal";
 static string winTitle = "none";
 
@@ -1463,7 +1462,7 @@ static void reset_font_scale(VteTerminal *vte, gdouble scale) {
     fontFile >> fontStrFile;
     fontFile.close();
 
-    fontStrFile = fontStrFile + " 11";
+    fontStrFile = fontStrFile + " 12";
     char tab2[1024];
     strcpy(tab2, fontStrFile.c_str());
 
@@ -1674,10 +1673,10 @@ gboolean key_press_cb(VteTerminal *vte, GdkEventKey *event, keybind_info *info) 
             case GDK_KEY_a:
                 move(vte, 0, (vte_terminal_get_row_count(vte) / 2));
                 return TRUE;
-            case GDK_KEY_u:
+            case GDK_KEY_d:
                 move(vte, 0, -(vte_terminal_get_row_count(vte) / 2));
                 return TRUE;
-            case GDK_KEY_d:
+            case GDK_KEY_u:
                 move(vte, 0, (vte_terminal_get_row_count(vte) / 2));
                 return TRUE;
             case GDK_KEY_z:
@@ -1755,6 +1754,15 @@ gboolean key_press_cb(VteTerminal *vte, GdkEventKey *event, keybind_info *info) 
             case GDK_KEY_9:
                 clearKey();
                 return TRUE;
+            case GDK_KEY_comma:
+                decrease_font_scale(vte);
+                return TRUE;
+            case GDK_KEY_period:
+                increase_font_scale(vte);
+                return TRUE;
+            case GDK_KEY_8:
+                reset_font_scale(vte, info->config.font_scale);
+                return TRUE;
         }
         if (modify_key_feed(event, info, modify_meta_table))
             return TRUE;
@@ -1814,6 +1822,13 @@ gboolean key_press_cb(VteTerminal *vte, GdkEventKey *event, keybind_info *info) 
                 pushKey('D');
                 return TRUE;
             case GDK_KEY_slash:
+                pushKey('s');
+                return TRUE;
+            case GDK_KEY_s:
+                if (keySeq.size() == 0) {
+                    vte_terminal_paste_clipboard(vte);
+                    return TRUE;
+                }
                 pushKey('s');
                 return TRUE;
             case GDK_KEY_d:
@@ -2210,11 +2225,11 @@ static void set_config(GtkWindow *window, VteTerminal *vte,
     fontFile >> fontStrFile;
     fontFile.close();
 
-    fontStrFile = fontStrFile + " 11";
+    fontStrFile = fontStrFile + " 12";
     char tab2[1024];
     strcpy(tab2, fontStrFile.c_str());
 
-    const char * fontStr = "fpw 11";
+    const char * fontStr = "fpw 12";
     PangoFontDescription *font = pango_font_description_from_string(tab2);
     vte_terminal_set_font(vte, font);
     pango_font_description_free(font);
@@ -2442,7 +2457,8 @@ int main(int argc, char **argv) {
             g_printerr("no window\n");
             return EXIT_FAILURE;
         }
-        char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
+        /* char xid_s[std::numeric_limits<long unsigned>::digits10 + 1]; */
+        char xid_s[65];
         snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
         env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
 
@@ -2466,6 +2482,11 @@ int main(int argc, char **argv) {
         umask(oldval);
 
         receiveFile = std::fopen(filename, "r");
+    } else {
+        FILE *fp;
+        fp = std::fopen("/tmp/ztermiteWAY", "w");
+        std::fclose(fp);
+        receiveFile = std::fopen("/tmp/ztermiteWAY", "r");
     }
 #endif
 
